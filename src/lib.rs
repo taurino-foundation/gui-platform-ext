@@ -127,6 +127,7 @@ pub use {
   once_cell,
   softbuffer,
   windows,
+  webview2_com
 };
 
 // ─────────────────────────────────────────────
