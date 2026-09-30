@@ -508,3 +508,46 @@ impl JsImage {
 
     Ok(())
 }
+
+
+impl TryFrom<Icon<'_>> for tao::window::Icon {
+    type Error = anyhow::Error;
+
+    fn try_from(icon: Icon<'_>) -> Result<Self, Self::Error> {
+        check_rgba_dimensions(
+            icon.rgba.len(),
+            icon.width,
+            icon.height,
+        )?;
+
+        tao::window::Icon::from_rgba(
+            icon.rgba.into_owned(),
+            icon.width,
+            icon.height,
+        )
+        .map_err(|error| {
+            anyhow!("failed to create Tao icon from RGBA data: {error}")
+        })
+    }
+}
+
+impl TryFrom<Image<'_>> for tao::window::Icon {
+    type Error = anyhow::Error;
+
+    fn try_from(image: Image<'_>) -> Result<Self, Self::Error> {
+        check_rgba_dimensions(
+            image.rgba.len(),
+            image.width,
+            image.height,
+        )?;
+
+        tao::window::Icon::from_rgba(
+            image.rgba.into_owned(),
+            image.width,
+            image.height,
+        )
+        .map_err(|error| {
+            anyhow!("failed to create Tao icon from RGBA data: {error}")
+        })
+    }
+}
