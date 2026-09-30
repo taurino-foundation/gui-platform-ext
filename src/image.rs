@@ -509,7 +509,32 @@ impl JsImage {
     Ok(())
 }
 
+fn check_rgba_dimensions(
+    rgba_len: usize,
+    width: u32,
+    height: u32,
+) -> Result<()> {
+    let expected = (width as u64)
+        .checked_mul(height as u64)
+        .and_then(|value| value.checked_mul(4))
+        .ok_or_else(|| {
+            anyhow!("RGBA image dimensions overflow: {width}x{height}")
+        })?;
 
+    let actual = rgba_len as u64;
+
+    if actual != expected {
+        return Err(anyhow!(
+            "RGBA buffer has {} bytes but a {}x{} image needs {} bytes",
+            actual,
+            width,
+            height,
+            expected,
+        ));
+    }
+
+    Ok(())
+}
 impl TryFrom<Icon<'_>> for tao::window::Icon {
     type Error = anyhow::Error;
 
