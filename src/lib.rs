@@ -137,6 +137,7 @@ pub use {
 pub use {
   objc2,
   objc2_app_kit,
+  
 };
 
 // ─────────────────────────────────────────────
@@ -154,3 +155,24 @@ pub use {
   gtk,
   webkit2gtk,
 };
+
+
+
+
+
+
+#[macro_export]
+pub macro_rules! lock {
+    ($value:expr) => {
+        $value.lock().map_err(|_| {
+            anyhow::anyhow!("Failed to lock {}.", stringify!($value))
+        })
+    };
+}
+
+#[macro_export]
+pub macro_rules! lock_force {
+    ($value:expr) => {
+        $value.lock().unwrap()
+    };
+}
