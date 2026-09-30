@@ -10,8 +10,12 @@ getrandom = "0.4.3"
 log = "0.4.34"
 image = { version = "0.25.10", default-features = false, features = ["png", "ico"] }
 dpi = { version = "0.1.2", features = ["serde"] }
+wry = { version = "0.57.0", default-features = false, features = [
+  "os-webview",
+  "linux-body",
+] }
 tao = { version = "0.37.0", default-features = false, features = ["rwh_06"] }
-
+raw-window-handle = "0.6"
 # ─────────────────────────────────────────────
 # Windows
 # ─────────────────────────────────────────────

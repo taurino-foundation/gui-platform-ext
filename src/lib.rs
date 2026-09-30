@@ -104,7 +104,7 @@ pub fn calculate_window_center_position(
 // Public dependency re-exports
 // ─────────────────────────────────────────────
 
-pub use {anyhow, getrandom, log, serde, tao};
+pub use {anyhow, getrandom, log, serde, tao, wry, raw_window_handle};
 
 // These names would conflict with our own `dpi` and `image` modules.
 pub use ::dpi as dpi_crate;
