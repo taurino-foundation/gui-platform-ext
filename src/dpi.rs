@@ -1,6 +1,54 @@
-pub use dpi::*;
-use serde::{Serialize};
+pub use ::dpi::*;
 
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use std::fmt::Display;
+/// System theme.
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+#[non_exhaustive]
+pub enum Theme {
+    /// Light theme.
+    Light,
+    /// Dark theme.
+    Dark,
+}
+
+impl Serialize for Theme {
+    fn serialize<S>(
+        &self,
+        serializer: S,
+    ) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_ref())
+    }
+}
+
+impl<'de> Deserialize<'de> for Theme {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        Ok(match s.to_lowercase().as_str() {
+            "dark" => Self::Dark,
+            _ => Self::Light,
+        })
+    }
+}
+
+impl Display for Theme {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Light => "light",
+                Self::Dark => "dark",
+            }
+        )
+    }
+}
 /// A rectangular region.
 #[derive(Clone, Copy, Debug, Serialize)]
 pub struct Rect {
