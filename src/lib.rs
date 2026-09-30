@@ -28,9 +28,9 @@ pub mod image;
 pub mod resources;
 pub mod util;
 
-pub fn error(err: &'static str) {
+pub fn error(_err: &'static str) {
     #[cfg(windows)]
-    win::dialog::error(err);
+    win::dialog::error(_err);
 
     #[cfg(any(
         target_os = "linux",
@@ -39,10 +39,10 @@ pub fn error(err: &'static str) {
         target_os = "netbsd",
         target_os = "openbsd"
     ))]
-    linux::dialog::error(err);
+    linux::dialog::error(_err);
 
     #[cfg(target_os = "macos")]
-    mac::dialog::error(err);
+    mac::dialog::error(_err);
 }
 
 pub trait MonitorExt {
@@ -126,28 +126,12 @@ pub use ::windows;
 #[cfg(windows)]
 pub use ::webview2_com;
 
-// ─────────────────────────────────────────────
-// macOS
-// ─────────────────────────────────────────────
-
-#[cfg(target_os = "macos")]
-pub use ::objc2;
-
-#[cfg(target_os = "macos")]
-pub use ::objc2_app_kit;
-// ─────────────────────────────────────────────
-// macOS
-// ─────────────────────────────────────────────
-
 #[cfg(target_os = "macos")]
 pub use ::objc2;
 
 #[cfg(target_os = "macos")]
 pub use ::objc2_app_kit;
 
-// ─────────────────────────────────────────────
-// Linux / BSD
-// ─────────────────────────────────────────────
 
 #[cfg(any(
     target_os = "linux",

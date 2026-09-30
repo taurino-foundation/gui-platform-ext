@@ -1,5 +1,4 @@
-use crate::types::PhysicalRect;
-use dpi::{LogicalPosition, LogicalSize};
+use crate::dpi::{LogicalPosition, LogicalSize, PhysicalRect};
 use gtk::prelude::MonitorExt;
 use tao::platform::unix::MonitorHandleExtUnix;
 

@@ -37,14 +37,16 @@ webview2-com = "0.39.1"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6.4"
+
 objc2-app-kit = { version = "0.3.2", default-features = false, features = [
     "std",
     "objc2-core-foundation",
+    "block2",
+    "NSApplication",
     "NSResponder",
     "NSScreen",
     "NSWindow",
 ] }
-
 
 # ─────────────────────────────────────────────
 # Linux / BSD

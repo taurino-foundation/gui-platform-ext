@@ -8,8 +8,8 @@ enum Level {
     Info,
 }
 
-pub fn error(err: &'static str) {
-    dialog_inner(err, Level::Error);
+pub fn error(_err: &'static str) {
+    dialog_inner(_err, Level::Error);
 }
 
 fn dialog_inner(err: &str, level: Level) {
