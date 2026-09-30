@@ -301,7 +301,7 @@ impl<'a> Image<'a> {
     /// see [`IconResource`].
     ///
     /// ```no_run
-    /// # use gui_platform_ext::image::Image;
+    /// # use taurino_core::image::Image;
     /// # fn main() -> anyhow::Result<()> {
     /// let icon = Image::from_icon_resource(1, 32, 32)?;
     /// let icon = Image::from_icon_resource("icon", 32, 32)?;
