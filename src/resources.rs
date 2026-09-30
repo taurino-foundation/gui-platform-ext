@@ -136,19 +136,28 @@ impl ResourceTable {
     /// Returns an error if the resource does not exist or if the resource
     /// exists but its type does not match `T`.
     pub fn get<T: Resource>(&self, rid: ResourceId) -> Result<Arc<T>> {
-        let resource = self.index.get(&rid).ok_or_else(|| anyhow!("resource with id {rid} was not found"))?;
+        let resource = self
+            .index
+            .get(&rid)
+            .ok_or_else(|| anyhow!("resource with id {rid} was not found"))?;
 
-        resource
-            .downcast_arc::<T>()
-            .cloned()
-            .ok_or_else(|| anyhow!("resource with id {rid} has type `{}`, expected `{}`", resource.name(), type_name::<T>(),))
+        resource.downcast_arc::<T>().cloned().ok_or_else(|| {
+            anyhow!(
+                "resource with id {rid} has type `{}`, expected `{}`",
+                resource.name(),
+                type_name::<T>(),
+            )
+        })
     }
 
     /// Returns a reference-counted pointer to the resource with the given `rid`.
     ///
     /// Returns an error if the resource does not exist.
     pub fn get_any(&self, rid: ResourceId) -> Result<Arc<dyn Resource>> {
-        self.index.get(&rid).cloned().ok_or_else(|| anyhow!("resource with id {rid} was not found"))
+        self.index
+            .get(&rid)
+            .cloned()
+            .ok_or_else(|| anyhow!("resource with id {rid} was not found"))
     }
 
     /// Replaces a resource with a new resource.
@@ -157,7 +166,9 @@ impl ResourceTable {
     ///
     /// Panics if the resource does not exist.
     pub fn replace<T: Resource>(&mut self, rid: ResourceId, resource: T) {
-        let result = self.index.insert(rid, Arc::new(resource) as Arc<dyn Resource>);
+        let result = self
+            .index
+            .insert(rid, Arc::new(resource) as Arc<dyn Resource>);
 
         assert!(result.is_some(), "resource with id {rid} does not exist",);
     }
@@ -191,7 +202,9 @@ impl ResourceTable {
     /// referenced by other variables. We therefore cannot assume that the
     /// returned `Arc` has a strong count of `1`.
     pub fn take_any(&mut self, rid: ResourceId) -> Result<Arc<dyn Resource>> {
-        self.index.remove(&rid).ok_or_else(|| anyhow!("resource with id {rid} was not found"))
+        self.index
+            .remove(&rid)
+            .ok_or_else(|| anyhow!("resource with id {rid} was not found"))
     }
 
     /// Returns an iterator that yields an `(id, name)` pair for every resource
@@ -201,7 +214,9 @@ impl ResourceTable {
     ///
     /// The order in which items appear is not guaranteed.
     pub fn names(&self) -> impl Iterator<Item = (ResourceId, Cow<'_, str>)> {
-        self.index.iter().map(|(&id, resource)| (id, resource.name()))
+        self.index
+            .iter()
+            .map(|(&id, resource)| (id, resource.name()))
     }
 
     /// Removes the resource with the given `rid` from the resource table.
@@ -213,7 +228,10 @@ impl ResourceTable {
     /// automatically cancelled. A resource may implement [`Resource::close`]
     /// to perform clean-up such as cancelling pending operations.
     pub fn close(&mut self, rid: ResourceId) -> Result<()> {
-        let resource = self.index.remove(&rid).ok_or_else(|| anyhow!("resource with id {rid} was not found"))?;
+        let resource = self
+            .index
+            .remove(&rid)
+            .ok_or_else(|| anyhow!("resource with id {rid} was not found"))?;
 
         resource.close();
 

@@ -8,9 +8,15 @@ use serde::{Deserialize, Serialize};
 use windows::{
     Win32::{
         Foundation::{E_FAIL, ERROR_INVALID_PARAMETER, ERROR_NOT_SUPPORTED, WIN32_ERROR},
-        Graphics::Gdi::{BI_RGB, BITMAPINFO, BITMAPINFOHEADER, CreateCompatibleDC, DIB_RGB_COLORS, DeleteDC, GetDIBits, HBITMAP},
+        Graphics::Gdi::{
+            BI_RGB, BITMAPINFO, BITMAPINFOHEADER, CreateCompatibleDC, DIB_RGB_COLORS, DeleteDC,
+            GetDIBits, HBITMAP,
+        },
         System::LibraryLoader::GetModuleHandleW,
-        UI::WindowsAndMessaging::{GetIconInfo, GetSystemMetrics, HICON, ICONINFO, IMAGE_ICON, LR_DEFAULTCOLOR, LoadImageW, SM_CXICON, SM_CYICON},
+        UI::WindowsAndMessaging::{
+            GetIconInfo, GetSystemMetrics, HICON, ICONINFO, IMAGE_ICON, LR_DEFAULTCOLOR,
+            LoadImageW, SM_CXICON, SM_CYICON,
+        },
     },
     core::{Owned, PCWSTR},
 };
@@ -135,10 +141,22 @@ unsafe fn read_bgra(hbm: HBITMAP, width: i32, height: i32) -> Result<Vec<u8>> {
     unsafe {
         let hdc = CreateCompatibleDC(None);
 
-        let scan_lines = GetDIBits(hdc, hbm, 0, height as u32, Some(bgra.as_mut_ptr() as _), &mut bitmap_info, DIB_RGB_COLORS);
+        let scan_lines = GetDIBits(
+            hdc,
+            hbm,
+            0,
+            height as u32,
+            Some(bgra.as_mut_ptr() as _),
+            &mut bitmap_info,
+            DIB_RGB_COLORS,
+        );
 
         // Capture the error before `DeleteDC` can overwrite it.
-        let error = (scan_lines != height).then(|| last_error_or(&format!("GetDIBits copied {scan_lines} of {height} scan lines")));
+        let error = (scan_lines != height).then(|| {
+            last_error_or(&format!(
+                "GetDIBits copied {scan_lines} of {height} scan lines"
+            ))
+        });
 
         let _ = DeleteDC(hdc);
 
@@ -263,9 +281,11 @@ impl<'a> Image<'a> {
     {
         let path = path.as_ref();
 
-        let bytes = std::fs::read(path).with_context(|| format!("failed to read image from `{}`", path.display(),))?;
+        let bytes = std::fs::read(path)
+            .with_context(|| format!("failed to read image from `{}`", path.display(),))?;
 
-        Self::from_bytes(&bytes).with_context(|| format!("failed to decode image from `{}`", path.display(),))
+        Self::from_bytes(&bytes)
+            .with_context(|| format!("failed to decode image from `{}`", path.display(),))
     }
 
     /// Creates a new image from the application icon embedded
@@ -281,23 +301,13 @@ impl<'a> Image<'a> {
         Image::from_icon_resource(WINDOWS_APP_ICON_RESOURCE_ID, size, size)
     }
 
-    /// Creates a new image from an icon resource embedded in the
-    /// executable of the current process.
-    ///
-    /// Resources are looked up in the process executable
-    /// (`GetModuleHandleW(NULL)`), not in the DLL containing this code
-    /// when Tauri is built as a library.
-    ///
-    /// **Note**: This might take ~2ms for [`LoadImageW`] to load
-    /// the image for the first time.
-    ///
     /// ## Examples
     ///
     /// The resource can be identified by its integer ID or by its name,
     /// see [`IconResource`].
     ///
     /// ```no_run
-    /// # use tauri::image::Image;
+    /// # use gui_platform_ext::image::Image;
     /// # fn main() -> anyhow::Result<()> {
     /// let icon = Image::from_icon_resource(1, 32, 32)?;
     /// let icon = Image::from_icon_resource("icon", 32, 32)?;
@@ -306,12 +316,19 @@ impl<'a> Image<'a> {
     /// ```
     #[cfg(windows)]
     #[cfg_attr(docsrs, doc(cfg(windows)))]
-    pub fn from_icon_resource<'r>(resource: impl Into<IconResource<'r>>, width: u32, height: u32) -> Result<Self> {
+    pub fn from_icon_resource<'r>(
+        resource: impl Into<IconResource<'r>>,
+        width: u32,
+        height: u32,
+    ) -> Result<Self> {
         let (width_i32, height_i32) = match (i32::try_from(width), i32::try_from(height)) {
             (Ok(width), Ok(height)) if width > 0 && height > 0 => (width, height),
 
             _ => {
-                return Err(resource_error(ERROR_INVALID_PARAMETER, "width and height must be between 1 and i32::MAX"));
+                return Err(resource_error(
+                    ERROR_INVALID_PARAMETER,
+                    "width and height must be between 1 and i32::MAX",
+                ));
             }
         };
 
@@ -323,22 +340,36 @@ impl<'a> Image<'a> {
             IconResource::Id(id) => PCWSTR(id as usize as *const u16),
 
             IconResource::Name(resource_name) => {
-                name = resource_name.encode_utf16().chain(std::iter::once(0)).collect();
+                name = resource_name
+                    .encode_utf16()
+                    .chain(std::iter::once(0))
+                    .collect();
 
                 PCWSTR(name.as_ptr())
             }
         };
 
-        let module = unsafe { GetModuleHandleW(PCWSTR::null()) }.map_err(|error| anyhow!("failed to get the current process module handle: {error}"))?;
+        let module = unsafe { GetModuleHandleW(PCWSTR::null()) }
+            .map_err(|error| anyhow!("failed to get the current process module handle: {error}"))?;
 
-        let raw_icon = unsafe { LoadImageW(Some(module.into()), resource_id, IMAGE_ICON, width_i32, height_i32, LR_DEFAULTCOLOR) }
-            .map_err(|error| anyhow!("failed to load icon resource: {error}"))?;
+        let raw_icon = unsafe {
+            LoadImageW(
+                Some(module.into()),
+                resource_id,
+                IMAGE_ICON,
+                width_i32,
+                height_i32,
+                LR_DEFAULTCOLOR,
+            )
+        }
+        .map_err(|error| anyhow!("failed to load icon resource: {error}"))?;
 
         let hicon = unsafe { Owned::new(HICON(raw_icon.0)) };
 
         let mut icon_info = ICONINFO::default();
 
-        unsafe { GetIconInfo(*hicon, &mut icon_info) }.map_err(|error| anyhow!("failed to retrieve icon information: {error}"))?;
+        unsafe { GetIconInfo(*hicon, &mut icon_info) }
+            .map_err(|error| anyhow!("failed to retrieve icon information: {error}"))?;
 
         let hbm_mask = unsafe { Owned::new(icon_info.hbmMask) };
 
@@ -347,20 +378,35 @@ impl<'a> Image<'a> {
         // Monochrome icons only have a mask bitmap
         // (AND mask stacked on top of the XOR mask).
         if hbm_color.is_invalid() {
-            return Err(resource_error(ERROR_NOT_SUPPORTED, "monochrome icons are not supported"));
+            return Err(resource_error(
+                ERROR_NOT_SUPPORTED,
+                "monochrome icons are not supported",
+            ));
         }
 
-        let mut bgra = unsafe { read_bgra(*hbm_color, width_i32, height_i32) }.context("failed to read icon color bitmap")?;
+        let mut bgra = unsafe { read_bgra(*hbm_color, width_i32, height_i32) }
+            .context("failed to read icon color bitmap")?;
 
         // Color bitmaps without an alpha channel
         // (e.g. 24bpp icons) read back with alpha = 0 on every pixel.
         //
         // Recover the alpha channel from the AND mask:
         // a set bit means the pixel is transparent.
-        if bgra.as_chunks::<BYTES_PER_PIXEL>().0.iter().all(|pixel| pixel[3] == 0) {
-            let mask = unsafe { read_bgra(*hbm_mask, width_i32, height_i32) }.context("failed to read icon mask bitmap")?;
+        if bgra
+            .as_chunks::<BYTES_PER_PIXEL>()
+            .0
+            .iter()
+            .all(|pixel| pixel[3] == 0)
+        {
+            let mask = unsafe { read_bgra(*hbm_mask, width_i32, height_i32) }
+                .context("failed to read icon mask bitmap")?;
 
-            for (pixel, mask) in bgra.as_chunks_mut::<BYTES_PER_PIXEL>().0.iter_mut().zip(mask.as_chunks::<BYTES_PER_PIXEL>().0) {
+            for (pixel, mask) in bgra
+                .as_chunks_mut::<BYTES_PER_PIXEL>()
+                .0
+                .iter_mut()
+                .zip(mask.as_chunks::<BYTES_PER_PIXEL>().0)
+            {
                 // The 1bpp mask expands to black
                 // (clear bit) or white (set bit).
                 pixel[3] = if mask[0] == 0 { 0xFF } else { 0 };
@@ -411,8 +457,6 @@ impl<'a> Image<'a> {
         }
     }
 }
-
-
 
 /// An image type that accepts file paths, raw bytes,
 /// previously loaded images and image objects.
@@ -475,9 +519,15 @@ impl JsImage {
                 .map(Arc::new)
                 .with_context(|| format!("failed to load image from `{}`", path.display(),)),
 
-            Self::Bytes(bytes) => Image::from_bytes(&bytes).map(Arc::new).context("failed to load image from raw bytes"),
+            Self::Bytes(bytes) => Image::from_bytes(&bytes)
+                .map(Arc::new)
+                .context("failed to load image from raw bytes"),
 
-            Self::Rgba { rgba, width, height } => {
+            Self::Rgba {
+                rgba,
+                width,
+                height,
+            } => {
                 let image = Image::new_owned(rgba, width, height);
 
                 check_rgba_size(&image).context("invalid raw RGBA image")?;
@@ -488,11 +538,17 @@ impl JsImage {
     }
 }
 
-    pub fn check_rgba_size(img: &Image<'_>) -> Result<()> {
+pub fn check_rgba_size(img: &Image<'_>) -> Result<()> {
     let expected = (img.width as u64)
         .checked_mul(img.height as u64)
         .and_then(|value| value.checked_mul(4))
-        .ok_or_else(|| anyhow!("RGBA image dimensions overflow: {}x{}", img.width, img.height,))?;
+        .ok_or_else(|| {
+            anyhow!(
+                "RGBA image dimensions overflow: {}x{}",
+                img.width,
+                img.height,
+            )
+        })?;
 
     let actual = img.rgba.len() as u64;
 
@@ -509,17 +565,11 @@ impl JsImage {
     Ok(())
 }
 
-fn check_rgba_dimensions(
-    rgba_len: usize,
-    width: u32,
-    height: u32,
-) -> Result<()> {
+fn check_rgba_dimensions(rgba_len: usize, width: u32, height: u32) -> Result<()> {
     let expected = (width as u64)
         .checked_mul(height as u64)
         .and_then(|value| value.checked_mul(4))
-        .ok_or_else(|| {
-            anyhow!("RGBA image dimensions overflow: {width}x{height}")
-        })?;
+        .ok_or_else(|| anyhow!("RGBA image dimensions overflow: {width}x{height}"))?;
 
     let actual = rgba_len as u64;
 
@@ -539,20 +589,10 @@ impl TryFrom<Icon<'_>> for tao::window::Icon {
     type Error = anyhow::Error;
 
     fn try_from(icon: Icon<'_>) -> Result<Self, Self::Error> {
-        check_rgba_dimensions(
-            icon.rgba.len(),
-            icon.width,
-            icon.height,
-        )?;
+        check_rgba_dimensions(icon.rgba.len(), icon.width, icon.height)?;
 
-        tao::window::Icon::from_rgba(
-            icon.rgba.into_owned(),
-            icon.width,
-            icon.height,
-        )
-        .map_err(|error| {
-            anyhow!("failed to create Tao icon from RGBA data: {error}")
-        })
+        tao::window::Icon::from_rgba(icon.rgba.into_owned(), icon.width, icon.height)
+            .map_err(|error| anyhow!("failed to create Tao icon from RGBA data: {error}"))
     }
 }
 
@@ -560,19 +600,9 @@ impl TryFrom<Image<'_>> for tao::window::Icon {
     type Error = anyhow::Error;
 
     fn try_from(image: Image<'_>) -> Result<Self, Self::Error> {
-        check_rgba_dimensions(
-            image.rgba.len(),
-            image.width,
-            image.height,
-        )?;
+        check_rgba_dimensions(image.rgba.len(), image.width, image.height)?;
 
-        tao::window::Icon::from_rgba(
-            image.rgba.into_owned(),
-            image.width,
-            image.height,
-        )
-        .map_err(|error| {
-            anyhow!("failed to create Tao icon from RGBA data: {error}")
-        })
+        tao::window::Icon::from_rgba(image.rgba.into_owned(), image.width, image.height)
+            .map_err(|error| anyhow!("failed to create Tao icon from RGBA data: {error}"))
     }
 }

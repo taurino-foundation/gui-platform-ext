@@ -43,11 +43,17 @@ impl WindowExt for tao::window::Window {
 
     fn draw_surface(
         &self,
-        surface: &mut softbuffer::Surface<std::sync::Arc<tao::window::Window>, std::sync::Arc<tao::window::Window>>,
+        surface: &mut softbuffer::Surface<
+            std::sync::Arc<tao::window::Window>,
+            std::sync::Arc<tao::window::Window>,
+        >,
         background_color: Option<tao::window::RGBA>,
     ) {
         let size = self.inner_size();
-        if let (Some(width), Some(height)) = (std::num::NonZeroU32::new(size.width), std::num::NonZeroU32::new(size.height)) {
+        if let (Some(width), Some(height)) = (
+            std::num::NonZeroU32::new(size.width),
+            std::num::NonZeroU32::new(size.height),
+        ) {
             surface.resize(width, height).unwrap();
             let mut buffer = surface.buffer_mut().unwrap();
             let color = background_color

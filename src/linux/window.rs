@@ -1,8 +1,14 @@
 use gtk::prelude::*;
-#[cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd"))]
+#[cfg(any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd"
+))]
 use tao::platform::unix::WindowExtUnix;
 
-impl crate::core::WindowExt for tao::window::Window {
+impl crate::WindowExt for tao::window::Window {
     fn set_enabled(&self, enabled: bool) {
         self.gtk_window().set_sensitive(enabled);
     }

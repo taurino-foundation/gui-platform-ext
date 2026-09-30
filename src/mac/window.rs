@@ -1,4 +1,4 @@
-use crate::core::WindowExt;
+use crate::WindowExt;
 use objc2::MainThreadMarker;
 use objc2_app_kit::{NSBackingStoreType, NSWindow, NSWindowStyleMask};
 use tao::platform::macos::WindowExtMacOS;
@@ -10,9 +10,16 @@ impl WindowExt for tao::window::Window {
         let ns_window: &NSWindow = unsafe { &*self.ns_window().cast() };
         if !enabled {
             let frame = ns_window.frame();
-            let mtm = MainThreadMarker::new().expect("`Window::set_enabled` can only be called on the main thread");
+            let mtm = MainThreadMarker::new()
+                .expect("`Window::set_enabled` can only be called on the main thread");
             let sheet = unsafe {
-                NSWindow::initWithContentRect_styleMask_backing_defer(mtm.alloc(), frame, NSWindowStyleMask::Titled, NSBackingStoreType::Buffered, false)
+                NSWindow::initWithContentRect_styleMask_backing_defer(
+                    mtm.alloc(),
+                    frame,
+                    NSWindowStyleMask::Titled,
+                    NSBackingStoreType::Buffered,
+                    false,
+                )
             };
             sheet.setAlphaValue(0.5);
             ns_window.beginSheet_completionHandler(&sheet, None);

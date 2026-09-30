@@ -48,7 +48,13 @@ fn dialog_inner(err: &str, level: Level) {
         use windows::Win32::UI::WindowsAndMessaging::*;
         use windows::core::{HRESULT, PCWSTR};
 
-        extern "system" fn task_dialog_callback(_hwnd: HWND, msg: TASKDIALOG_NOTIFICATIONS, _wparam: WPARAM, lparam: LPARAM, _data: isize) -> HRESULT {
+        extern "system" fn task_dialog_callback(
+            _hwnd: HWND,
+            msg: TASKDIALOG_NOTIFICATIONS,
+            _wparam: WPARAM,
+            lparam: LPARAM,
+            _data: isize,
+        ) -> HRESULT {
             if msg == TDN_HYPERLINK_CLICKED {
                 let link = PCWSTR(lparam.0 as _);
                 let _ = unsafe { ShellExecuteW(None, None, link, None, None, SW_SHOWNORMAL) };
