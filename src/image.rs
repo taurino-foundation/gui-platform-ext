@@ -175,9 +175,9 @@ fn last_error_or(message: &str) -> windows::core::Error {
 /// An RGBA image in row-major order from top to bottom.
 #[derive(Clone)]
 pub struct Image<'a> {
-    rgba: Cow<'a, [u8]>,
-    width: u32,
-    height: u32,
+    pub rgba: Cow<'a, [u8]>,
+    pub width: u32,
+    pub height: u32,
 }
 
 impl std::fmt::Debug for Image<'_> {
@@ -488,7 +488,7 @@ impl JsImage {
     }
 }
 
-fn check_rgba_size(img: &Image<'_>) -> Result<()> {
+    pub fn check_rgba_size(img: &Image<'_>) -> Result<()> {
     let expected = (img.width as u64)
         .checked_mul(img.height as u64)
         .and_then(|value| value.checked_mul(4))
