@@ -235,10 +235,7 @@ mod windows {
                                 0,
                                 width,
                                 height,
-                                SWP_ASYNCWINDOWPOS
-                                    | SWP_NOACTIVATE
-                                    | SWP_NOOWNERZORDER
-                                    | SWP_NOMOVE,
+                                SWP_ASYNCWINDOWPOS | SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE,
                             );
 
                             set_drag_hwnd_rgn(child, width, height, has_undecorated_shadows);
@@ -312,16 +309,7 @@ mod windows {
                     let border_x = util::get_system_metrics_for_dpi(SM_CXFRAME, dpi);
                     let border_y = util::get_system_metrics_for_dpi(SM_CYFRAME, dpi);
 
-                    let res = hit_test(
-                        rect.left,
-                        rect.top,
-                        rect.right,
-                        rect.bottom,
-                        cx,
-                        cy,
-                        border_x,
-                        border_y,
-                    );
+                    let res = hit_test(rect.left, rect.top, rect.right, rect.bottom, cx, cy, border_x, border_y);
 
                     return LRESULT(res.to_win32() as _);
                 }
@@ -358,16 +346,7 @@ mod windows {
                         let border_x = util::get_system_metrics_for_dpi(SM_CXFRAME, dpi);
                         let border_y = util::get_system_metrics_for_dpi(SM_CYFRAME, dpi);
 
-                        hit_test(
-                            rect.left,
-                            rect.top,
-                            rect.right,
-                            rect.bottom,
-                            cx,
-                            cy,
-                            border_x,
-                            border_y,
-                        )
+                        hit_test(rect.left, rect.top, rect.right, rect.bottom, cx, cy, border_x, border_y)
                     };
 
                     if res != HitTestResult::NoWhere {
@@ -409,8 +388,7 @@ mod windows {
     pub fn detach_resize_handler(hwnd: isize) {
         let hwnd = HWND(hwnd as _);
 
-        let Ok(child) = (unsafe { FindWindowExW(Some(hwnd), None, CLASS_NAME, WINDOW_NAME) })
-        else {
+        let Ok(child) = (unsafe { FindWindowExW(Some(hwnd), None, CLASS_NAME, WINDOW_NAME) }) else {
             return;
         };
 
@@ -460,8 +438,7 @@ mod windows {
         let width = rect.right - rect.left;
         let height = rect.bottom - rect.top;
 
-        let Ok(child) = (unsafe { FindWindowExW(Some(hwnd), None, CLASS_NAME, WINDOW_NAME) })
-        else {
+        let Ok(child) = (unsafe { FindWindowExW(Some(hwnd), None, CLASS_NAME, WINDOW_NAME) }) else {
             return;
         };
 
@@ -519,9 +496,7 @@ mod gtk {
     impl HitTestResult {
         fn to_gtk_edge(self) -> gtk::gdk::WindowEdge {
             match self {
-                HitTestResult::Client | HitTestResult::NoWhere => {
-                    gtk::gdk::WindowEdge::__Unknown(0)
-                }
+                HitTestResult::Client | HitTestResult::NoWhere => gtk::gdk::WindowEdge::__Unknown(0),
                 HitTestResult::Left => gtk::gdk::WindowEdge::West,
                 HitTestResult::Right => gtk::gdk::WindowEdge::East,
                 HitTestResult::Top => gtk::gdk::WindowEdge::North,
@@ -554,8 +529,7 @@ mod gtk {
 
     fn resizable_window(webview: &webkit2gtk::WebView) -> Option<gtk::Window> {
         let window = webview.parent()?.parent()?.downcast::<gtk::Window>().ok()?;
-        (!window.is_decorated() && window.is_resizable() && !window.is_maximized())
-            .then_some(window)
+        (!window.is_decorated() && window.is_resizable() && !window.is_maximized()).then_some(window)
     }
 
     fn hit_test_window(window: &gtk::gdk::Window, x: f64, y: f64) -> HitTestResult {
@@ -590,72 +564,59 @@ mod gtk {
                 | gtk::gdk::EventMask::TOUCH_MASK,
         );
 
-        webview.connect_motion_notify_event(
-            move |webview: &webkit2gtk::WebView, event: &gtk::gdk::EventMotion| {
-                let Some(window) = resizable_window(webview).and_then(|_| webview.window()) else {
-                    return Propagation::Proceed;
-                };
+        webview.connect_motion_notify_event(move |webview: &webkit2gtk::WebView, event: &gtk::gdk::EventMotion| {
+            let Some(window) = resizable_window(webview).and_then(|_| webview.window()) else {
+                return Propagation::Proceed;
+            };
 
-                let (x, y) = event.position();
-                let result = hit_test_window(&window, x, y);
-                if matches!(result, HitTestResult::Client | HitTestResult::NoWhere) {
-                    return Propagation::Proceed;
-                }
+            let (x, y) = event.position();
+            let result = hit_test_window(&window, x, y);
+            if matches!(result, HitTestResult::Client | HitTestResult::NoWhere) {
+                return Propagation::Proceed;
+            }
 
-                let cursor = result.to_cursor(&window.display());
-                window.set_cursor(cursor.as_ref());
-                Propagation::Stop
-            },
-        );
+            let cursor = result.to_cursor(&window.display());
+            window.set_cursor(cursor.as_ref());
+            Propagation::Stop
+        });
 
-        webview.connect_button_press_event(
-            move |webview: &webkit2gtk::WebView, event: &gtk::gdk::EventButton| {
-                if event.button() != 1 {
-                    return Propagation::Proceed;
-                }
-                let Some(window) = resizable_window(webview).and_then(|w| w.window()) else {
-                    return Propagation::Proceed;
-                };
+        webview.connect_button_press_event(move |webview: &webkit2gtk::WebView, event: &gtk::gdk::EventButton| {
+            if event.button() != 1 {
+                return Propagation::Proceed;
+            }
+            let Some(window) = resizable_window(webview).and_then(|w| w.window()) else {
+                return Propagation::Proceed;
+            };
 
-                let (root_x, root_y) = event.root();
-                let edge = hit_test_window_root(&window, root_x, root_y).to_gtk_edge();
-                if matches!(&edge, WindowEdge::__Unknown(_)) {
-                    return Propagation::Proceed;
-                }
+            let (root_x, root_y) = event.root();
+            let edge = hit_test_window_root(&window, root_x, root_y).to_gtk_edge();
+            if matches!(&edge, WindowEdge::__Unknown(_)) {
+                return Propagation::Proceed;
+            }
 
-                window.begin_resize_drag(edge, 1, root_x as i32, root_y as i32, event.time());
-                // Prevent the webview from handling an event claimed by the resize inset
-                Propagation::Stop
-            },
-        );
+            window.begin_resize_drag(edge, 1, root_x as i32, root_y as i32, event.time());
+            // Prevent the webview from handling an event claimed by the resize inset
+            Propagation::Stop
+        });
 
-        webview.connect_touch_event(
-            move |webview: &webkit2gtk::WebView, event: &gtk::gdk::Event| {
-                let Some(window) = resizable_window(webview).and_then(|w| w.window()) else {
-                    return Propagation::Proceed;
-                };
-                let Some((root_x, root_y)) = event.root_coords() else {
-                    return Propagation::Proceed;
-                };
-                let Some(device) = event.device() else {
-                    return Propagation::Proceed;
-                };
+        webview.connect_touch_event(move |webview: &webkit2gtk::WebView, event: &gtk::gdk::Event| {
+            let Some(window) = resizable_window(webview).and_then(|w| w.window()) else {
+                return Propagation::Proceed;
+            };
+            let Some((root_x, root_y)) = event.root_coords() else {
+                return Propagation::Proceed;
+            };
+            let Some(device) = event.device() else {
+                return Propagation::Proceed;
+            };
 
-                let edge = hit_test_window_root(&window, root_x, root_y).to_gtk_edge();
-                if matches!(&edge, WindowEdge::__Unknown(_)) {
-                    return Propagation::Proceed;
-                }
+            let edge = hit_test_window_root(&window, root_x, root_y).to_gtk_edge();
+            if matches!(&edge, WindowEdge::__Unknown(_)) {
+                return Propagation::Proceed;
+            }
 
-                window.begin_resize_drag_for_device(
-                    edge,
-                    &device,
-                    0,
-                    root_x as i32,
-                    root_y as i32,
-                    event.time(),
-                );
-                Propagation::Proceed
-            },
-        );
+            window.begin_resize_drag_for_device(edge, &device, 0, root_x as i32, root_y as i32, event.time());
+            Propagation::Proceed
+        });
     }
 }

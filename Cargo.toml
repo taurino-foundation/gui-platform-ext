@@ -16,41 +16,28 @@ wry = { version = "0.57.0", default-features = false, features = [
 ] }
 tao = { version = "0.37.0", default-features = false, features = ["rwh_06"] }
 raw-window-handle = "0.6"
+
+
+
 # ─────────────────────────────────────────────
 # Windows
 # ─────────────────────────────────────────────
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows = { version = "0.62.2", features = [
-    "Win32_Foundation",
-    "Win32_Graphics_Gdi",
-    "Win32_Graphics_Dwm",
-    "Win32_System_LibraryLoader",
-    "Win32_UI_HiDpi",
-    "Win32_UI_Input_KeyboardAndMouse",
-    "Win32_UI_Controls",
-    "Win32_UI_Shell",
-    "Win32_UI_WindowsAndMessaging",
-] }
+windows = { version = "0.62", features = ["Win32_Foundation","Win32_UI","Win32_UI_WindowsAndMessaging","Win32_Graphics_Gdi","Win32_Graphics_Dwm","Win32_System_LibraryLoader","Win32_System_WinRT"] }
 softbuffer = { version = "0.4.8", default-features = false }
 once_cell = "1.21.4"
 webview2-com = "0.39.1"
+
+
 # ─────────────────────────────────────────────
 # macOS
 # ─────────────────────────────────────────────
 
 [target.'cfg(target_os = "macos")'.dependencies]
-objc2 = "0.6.4"
-
-objc2-app-kit = { version = "0.3.2", default-features = false, features = [
-    "std",
-    "objc2-core-foundation",
-    "block2",
-    "NSApplication",
-    "NSResponder",
-    "NSScreen",
-    "NSWindow",
-] }
+objc2 = "0.6"
+objc2-app-kit = {version = "0.3.2",default-features = false,features = ["std","block2","NSApplication","NSResponder","NSView","NSWindow","NSScreen","NSGraphics","NSColor","NSImage"]}
+objc2-web-kit = {version = "0.3.2",default-features = false,features = ["objc2-app-kit","WKWebView","WKWebViewConfiguration","WKUserContentController"]}
 
 # ─────────────────────────────────────────────
 # Linux / BSD
@@ -58,10 +45,18 @@ objc2-app-kit = { version = "0.3.2", default-features = false, features = [
 
 
 [target.'cfg(any(target_os = "linux", target_os = "dragonfly", target_os = "freebsd", target_os = "netbsd", target_os = "openbsd"))'.dependencies]
-gtk = "0.18.2"
-webkit2gtk = { version = "=2.0.2", features = ["v2_38"] }
+gtk = {version = "0.18",features = ["v3_24"]}
+webkit2gtk = {version = "=2.0",features = ["v2_40"]}
 
 
 
 [features]
-common-controls-v6 = []
+default = ["x11","dbus"]
+x11 = ["tao/x11","wry/x11"]
+dbus = ["tao/dbus"]
+common-controls-v6 = ["windows/Win32_UI_Controls","windows/Win32_UI_Shell"]
+
+# Desktop only
+[target.'cfg(any(target_os = "linux",target_os = "dragonfly",target_os = "freebsd",target_os = "openbsd",target_os = "netbsd",target_os = "windows",target_os = "macos"))'.dependencies]
+muda = {version = "0.20",default-features = false,features = ["serde","gtk3"]}
+tray-icon = {version = "0.25",default-features = false,features = ["serde","libappindicator"]}

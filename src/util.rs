@@ -39,8 +39,7 @@ mod imp {
 
         // The module intentionally remains loaded for the lifetime of the process,
         // because function pointers obtained from it are stored in static Lazy values.
-        let module =
-            unsafe { LoadLibraryW(PCWSTR::from_raw(library.as_ptr())) }.unwrap_or_default();
+        let module = unsafe { LoadLibraryW(PCWSTR::from_raw(library.as_ptr())) }.unwrap_or_default();
 
         if module.is_invalid() {
             return None;
@@ -65,8 +64,7 @@ mod imp {
         dpi_y: *mut u32,
     ) -> HRESULT;
 
-    type GetSystemMetricsForDpi =
-        unsafe extern "system" fn(nindex: SYSTEM_METRICS_INDEX, dpi: u32) -> i32;
+    type GetSystemMetricsForDpi = unsafe extern "system" fn(nindex: SYSTEM_METRICS_INDEX, dpi: u32) -> i32;
 
     static GET_DPI_FOR_WINDOW: Lazy<Option<GetDpiForWindow>> =
         Lazy::new(|| get_function!("user32.dll", GetDpiForWindow));
@@ -104,9 +102,7 @@ mod imp {
                 let mut dpi_x = 0;
                 let mut dpi_y = 0;
 
-                if get_dpi_for_monitor(monitor, MDT_EFFECTIVE_DPI, &mut dpi_x, &mut dpi_y).is_ok()
-                    && dpi_x != 0
-                {
+                if get_dpi_for_monitor(monitor, MDT_EFFECTIVE_DPI, &mut dpi_x, &mut dpi_y).is_ok() && dpi_x != 0 {
                     dpi_x
                 } else {
                     USER_DEFAULT_SCREEN_DPI
@@ -126,11 +122,7 @@ mod imp {
 
                 let _ = ReleaseDC(Some(hwnd), hdc);
 
-                if dpi > 0 {
-                    dpi as u32
-                } else {
-                    USER_DEFAULT_SCREEN_DPI
-                }
+                if dpi > 0 { dpi as u32 } else { USER_DEFAULT_SCREEN_DPI }
             } else {
                 // For a DPI-unaware process Windows performs the scaling itself.
                 // Returning 96 prevents the application from applying scaling again.

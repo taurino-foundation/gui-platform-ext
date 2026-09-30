@@ -28,6 +28,12 @@ pub mod image;
 pub mod resources;
 pub mod util;
 
+use crate::dpi::PhysicalRect;
+
+// ─────────────────────────────────────────────
+// Error handling
+// ─────────────────────────────────────────────
+
 pub fn error(_err: &'static str) {
     #[cfg(windows)]
     win::dialog::error(_err);
@@ -45,14 +51,32 @@ pub fn error(_err: &'static str) {
     mac::dialog::error(_err);
 }
 
+// ─────────────────────────────────────────────
+// Monitor extensions
+// ─────────────────────────────────────────────
+
 pub trait MonitorExt {
     /// Get the work area of this monitor.
     ///
     /// ## Platform-specific
     ///
     /// - **Android / iOS**: Unsupported.
-    fn work_area(&self) -> crate::dpi::PhysicalRect<i32, u32>;
+    fn work_area(&self) -> PhysicalRect<i32, u32>;
 }
+
+#[cfg(mobile)]
+impl MonitorExt for tao::monitor::MonitorHandle {
+    fn work_area(&self) -> PhysicalRect<i32, u32> {
+        PhysicalRect {
+            size: self.size(),
+            position: self.position(),
+        }
+    }
+}
+
+// ─────────────────────────────────────────────
+// Window extensions
+// ─────────────────────────────────────────────
 
 pub trait WindowExt {
     /// Enable or disable the window.
@@ -74,20 +98,32 @@ pub trait WindowExt {
     /// ## Platform-specific
     ///
     /// - **Android / iOS**: Unsupported.
+    #[cfg(not(any(target_os = "ios", target_os = "android")))]
     fn center(&self) {}
 
-    /// Clears the window surface, making it transparent.
+    /// Clears the window surface, i.e. makes it transparent.
     #[cfg(windows)]
     fn draw_surface(
         &self,
-        surface: &mut softbuffer::Surface<
-            std::sync::Arc<tao::window::Window>,
-            std::sync::Arc<tao::window::Window>,
-        >,
+        surface: &mut softbuffer::Surface<std::sync::Arc<tao::window::Window>, std::sync::Arc<tao::window::Window>>,
         background_color: Option<tao::window::RGBA>,
     );
 }
 
+#[cfg(mobile)]
+impl WindowExt for tao::window::Window {
+    fn set_enabled(&self, _: bool) {}
+
+    fn is_enabled(&self) -> bool {
+        true
+    }
+}
+
+// ─────────────────────────────────────────────
+// Window positioning
+// ─────────────────────────────────────────────
+
+#[cfg(desktop)]
 pub fn calculate_window_center_position(
     window_size: tao::dpi::PhysicalSize<u32>,
     target_monitor: tao::monitor::MonitorHandle,
@@ -104,11 +140,36 @@ pub fn calculate_window_center_position(
 // Public dependency re-exports
 // ─────────────────────────────────────────────
 
-pub use {anyhow, getrandom, log, serde, tao, wry, raw_window_handle};
+pub use {anyhow, getrandom, log, raw_window_handle, serde, tao, wry};
 
 // These names would conflict with our own `dpi` and `image` modules.
-pub use ::dpi as dpi_crate;
 pub use ::image as image_crate;
+
+// ─────────────────────────────────────────────
+// Cross-platform desktop dependencies
+// ─────────────────────────────────────────────
+
+#[cfg(any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "openbsd",
+    target_os = "netbsd",
+    target_os = "windows",
+    target_os = "macos",
+))]
+pub use ::muda;
+
+#[cfg(any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "openbsd",
+    target_os = "netbsd",
+    target_os = "windows",
+    target_os = "macos",
+))]
+pub use ::tray_icon;
 
 // ─────────────────────────────────────────────
 // Windows
@@ -121,10 +182,14 @@ pub use ::once_cell;
 pub use ::softbuffer;
 
 #[cfg(windows)]
-pub use ::windows;
+pub use ::webview2_com;
 
 #[cfg(windows)]
-pub use ::webview2_com;
+pub use ::windows;
+
+// ─────────────────────────────────────────────
+// macOS
+// ─────────────────────────────────────────────
 
 #[cfg(target_os = "macos")]
 pub use ::objc2;
@@ -132,6 +197,12 @@ pub use ::objc2;
 #[cfg(target_os = "macos")]
 pub use ::objc2_app_kit;
 
+#[cfg(target_os = "macos")]
+pub use ::objc2_web_kit;
+
+// ─────────────────────────────────────────────
+// Linux / BSD
+// ─────────────────────────────────────────────
 
 #[cfg(any(
     target_os = "linux",
@@ -150,6 +221,10 @@ pub use ::gtk;
     target_os = "openbsd"
 ))]
 pub use ::webkit2gtk;
+
+// ─────────────────────────────────────────────
+// Synchronization helpers
+// ─────────────────────────────────────────────
 
 #[macro_export]
 macro_rules! lock {
