@@ -123,40 +123,58 @@ pub use ::image as image_crate;
 // ─────────────────────────────────────────────
 
 #[cfg(windows)]
-pub use {
-  once_cell,
-  softbuffer,
-  windows,
-  webview2_com
-};
+pub use ::once_cell;
+
+#[cfg(windows)]
+pub use ::softbuffer;
+
+#[cfg(windows)]
+pub use ::windows;
+
+#[cfg(windows)]
+pub use ::webview2_com;
 
 // ─────────────────────────────────────────────
 // macOS
 // ─────────────────────────────────────────────
 
 #[cfg(target_os = "macos")]
-pub use {
-  objc2,
-  objc2_app_kit,
-  
-};
+pub use ::objc2;
+
+#[cfg(target_os = "macos")]
+pub use ::objc2_app_kit;
+// ─────────────────────────────────────────────
+// macOS
+// ─────────────────────────────────────────────
+
+#[cfg(target_os = "macos")]
+pub use ::objc2;
+
+#[cfg(target_os = "macos")]
+pub use ::objc2_app_kit;
+
 
 // ─────────────────────────────────────────────
 // Linux / BSD
 // ─────────────────────────────────────────────
 
 #[cfg(any(
-  target_os = "linux",
-  target_os = "dragonfly",
-  target_os = "freebsd",
-  target_os = "netbsd",
-  target_os = "openbsd"
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd"
 ))]
-pub use {
-  gtk,
-  webkit2gtk,
-};
+pub use ::gtk;
 
+#[cfg(any(
+    target_os = "linux",
+    target_os = "dragonfly",
+    target_os = "freebsd",
+    target_os = "netbsd",
+    target_os = "openbsd"
+))]
+pub use ::webkit2gtk;
 
 
 
