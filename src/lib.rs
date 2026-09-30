@@ -162,7 +162,7 @@ pub use {
 
 
 #[macro_export]
-pub macro_rules! lock {
+macro_rules! lock {
     ($value:expr) => {
         $value.lock().map_err(|_| {
             anyhow::anyhow!("Failed to lock {}.", stringify!($value))
@@ -171,7 +171,7 @@ pub macro_rules! lock {
 }
 
 #[macro_export]
-pub macro_rules! lock_force {
+macro_rules! lock_force {
     ($value:expr) => {
         $value.lock().unwrap()
     };
