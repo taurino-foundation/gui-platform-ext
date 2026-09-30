@@ -2,7 +2,7 @@ use crate::dpi::{LogicalPosition, LogicalSize, PhysicalRect};
 use gtk::prelude::MonitorExt;
 use tao::platform::unix::MonitorHandleExtUnix;
 
-impl crate::core::MonitorExt for tao::monitor::MonitorHandle {
+impl crate::MonitorExt for tao::monitor::MonitorHandle {
     fn work_area(&self) -> PhysicalRect<i32, u32> {
         let rect = self.gdk_monitor().workarea();
         let scale_factor = self.scale_factor();
