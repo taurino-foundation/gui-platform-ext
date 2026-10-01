@@ -34,6 +34,21 @@ use crate::dpi::PhysicalRect;
 // Error handling
 // ─────────────────────────────────────────────
 
+use std::sync::{Arc, Mutex};
+
+
+pub type ArcMut<T> = Arc<Mutex<T>>;
+
+pub fn arc<T>(t: T) -> Arc<T> {
+    Arc::new(t)
+}
+
+pub fn arc_mut<T>(t: T) -> ArcMut<T> {
+    Arc::new(Mutex::new(t))
+}
+
+
+
 pub fn error(_err: &'static str) {
     #[cfg(windows)]
     win::dialog::error(_err);
