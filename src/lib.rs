@@ -240,6 +240,35 @@ pub use ::webkit2gtk;
 // ─────────────────────────────────────────────
 // Synchronization helpers
 // ─────────────────────────────────────────────
+#[macro_export]
+macro_rules! unsafe_impl_sync_send {
+    ($type:ty) => {
+        unsafe impl Send for $type {}
+        unsafe impl Sync for $type {}
+    };
+}
+
+#[macro_export]
+macro_rules! set_property_some {
+    ($builder:ident, $property:ident, &$value:expr) => {
+        if let Some(value) = &$value {
+            $builder = $builder.$property(value);
+        }
+    };
+    ($builder:ident, $property:ident, $value:expr) => {
+        if let Some(value) = $value {
+            $builder = $builder.$property(value.clone());
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! set_property {
+    ($builder:ident, $property:ident, $value:expr) => {
+        $builder = $builder.$property($value);
+    };
+}
+
 
 #[macro_export]
 macro_rules! lock {
