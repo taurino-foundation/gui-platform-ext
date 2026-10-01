@@ -237,6 +237,30 @@ pub use ::gtk;
 ))]
 pub use ::webkit2gtk;
 
+
+
+/// Identifier of a window.
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
+pub struct WindowId(u32);
+
+impl From<u32> for WindowId {
+  fn from(value: u32) -> Self {
+    Self(value)
+  }
+}
+
+
+
+/// Identifier of a webview.
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
+pub struct WebViewId(u32);
+
+impl From<u32> for WebViewId {
+  fn from(value: u32) -> Self {
+    Self(value)
+  }
+}
+
 // ─────────────────────────────────────────────
 // Synchronization helpers
 // ─────────────────────────────────────────────
