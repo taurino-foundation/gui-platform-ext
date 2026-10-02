@@ -249,7 +249,11 @@ impl From<u32> for WindowId {
   }
 }
 
-
+impl WindowId {
+    pub fn get(self) -> u32 {
+        self.0
+    }
+}
 
 /// Identifier of a webview.
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq, Ord, PartialOrd, serde::Serialize, serde::Deserialize)]
@@ -259,6 +263,13 @@ impl From<u32> for WebViewId {
   fn from(value: u32) -> Self {
     Self(value)
   }
+}
+
+
+impl WebViewId {
+    pub fn get(self) -> u32 {
+        self.0
+    }
 }
 
 // ─────────────────────────────────────────────
