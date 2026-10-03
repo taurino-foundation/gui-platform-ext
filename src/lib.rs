@@ -413,12 +413,11 @@ pub type EngineLoopProxy = EventLoopProxy<EventLoopMessage>;
 pub type EngineLoopClosed = EventLoopClosed<EventLoopMessage>;
 pub type EngineLoopEvent<'a> = Event<'a, EventLoopMessage>;
 pub type EngineCallback = Pin<Box<dyn Fn(&EngineWindowTarget, &mut ControlFlow) -> anyhow::Result<()> + Send>>;
-
 /// Type-erased operation scheduled for execution on the Tao event-loop thread.
 ///
 /// The callback receives:
 ///
-/// - the current [`TaurinoWindowTarget`], allowing creation or manipulation of
+/// - the current [`EngineWindowTarget`], allowing creation or manipulation of
 ///   event-loop-bound objects;
 /// - mutable [`ControlFlow`], allowing the callback to influence future
 ///   event-loop execution.
