@@ -362,10 +362,19 @@ macro_rules! lock_force {
 
 
 
+use std::{
+    fmt::{Debug, Formatter},
+    ops::Deref,
+    pin::Pin,
+};
+
 use tao::{
-        event::Event,
-        event_loop::{ControlFlow, EventLoop, EventLoopBuilder, EventLoopWindowTarget},
-    }};
+    event::Event,
+    event_loop::{
+        ControlFlow, EventLoop, EventLoopBuilder, EventLoopClosed, EventLoopProxy,
+        EventLoopWindowTarget,
+    },
+};
 
 /// Internal messages delivered through the Tao user-event channel.
 ///
