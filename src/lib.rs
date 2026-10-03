@@ -69,6 +69,23 @@ pub fn apply_shadow_correction(
     Ok(shadow_width)
 }
 
+pub fn find_monitor_for_position(
+    monitors: impl Iterator<Item = tao::monitor::MonitorHandle>,
+    window_position: crate::dpi::Position,
+) -> Option<tao::monitor::MonitorHandle> {
+    monitors.into_iter().find(|m| {
+        let monitor_pos = m.position();
+        let monitor_size = m.size();
+
+        // type annotations required for 32bit targets.
+        let window_position = window_position.to_physical::<i32>(m.scale_factor());
+
+        monitor_pos.x <= window_position.x
+            && window_position.x < monitor_pos.x + monitor_size.width as i32
+            && monitor_pos.y <= window_position.y
+            && window_position.y < monitor_pos.y + monitor_size.height as i32
+    })
+}
 
 pub fn error(_err: &'static str) {
     #[cfg(windows)]
