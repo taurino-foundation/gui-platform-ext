@@ -65,7 +65,7 @@ impl Default for Rect {
 }
 
 /// A rectangular region in physical pixels.
-#[derive(Clone, Copy, Debug, Serialize, Deserializ)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct PhysicalRect<P: dpi::Pixel, S: dpi::Pixel> {
     /// Rect position.
     pub position: dpi::PhysicalPosition<P>,
@@ -83,7 +83,7 @@ impl<P: dpi::Pixel, S: dpi::Pixel> Default for PhysicalRect<P, S> {
 }
 
 /// A rectangular region in logical pixels.
-#[derive(Clone, Copy, Debug, Serialize, Deserializ)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct LogicalRect<P: dpi::Pixel, S: dpi::Pixel> {
     /// Rect position.
     pub position: dpi::LogicalPosition<P>,
