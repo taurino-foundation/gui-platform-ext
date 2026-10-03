@@ -412,7 +412,7 @@ pub type EngineWindowTarget = EventLoopWindowTarget<EventLoopMessage>;
 pub type EngineLoopProxy = EventLoopProxy<EventLoopMessage>;
 pub type EngineLoopClosed = EventLoopClosed<EventLoopMessage>;
 pub type EngineLoopEvent<'a> = Event<'a, EventLoopMessage>;
-pub type EngineCallback = Pin<Box<dyn Fn(&TaurinoWindowTarget, &mut ControlFlow) -> anyhow::Result<()> + Send>>;
+pub type EngineCallback = Pin<Box<dyn Fn(&EngineWindowTarget, &mut ControlFlow) -> anyhow::Result<()> + Send>>;
 
 /// Type-erased operation scheduled for execution on the Tao event-loop thread.
 ///
