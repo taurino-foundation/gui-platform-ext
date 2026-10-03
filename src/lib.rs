@@ -28,7 +28,7 @@ pub mod image;
 pub mod resources;
 pub mod util;
 
-use crate::dpi::PhysicalRect;
+use crate::dpi::{PhysicalRect, PhysicalSize};
 
 // ─────────────────────────────────────────────
 // Error handling
@@ -47,6 +47,26 @@ pub fn arc_mut<T>(t: T) -> ArcMut<T> {
     Arc::new(Mutex::new(t))
 }
 
+pub fn apply_shadow_correction(
+    decorations: bool,
+    window_size: &mut PhysicalSize<u32>, // oder was auch immer der Typ ist
+) -> Result<u32> {
+    let mut shadow_width = 0;
+
+    #[cfg(windows)]
+    if decorations {
+        use windows::Win32::UI::WindowsAndMessaging::{AdjustWindowRect, WS_OVERLAPPEDWINDOW};
+        let mut rect = windows::Win32::Foundation::RECT::default();
+        let result = unsafe { AdjustWindowRect(&mut rect, WS_OVERLAPPEDWINDOW, false) };
+        if result.is_ok() {
+            shadow_width = (rect.right - rect.left) as u32;
+            // rect.bottom is made out of shadow, and we don't care about it
+            window_size.height += -rect.top as u32;
+        }
+    }
+
+    Ok(shadow_width)
+}
 
 
 pub fn error(_err: &'static str) {
