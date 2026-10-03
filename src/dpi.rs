@@ -47,7 +47,7 @@ impl Display for Theme {
     }
 }
 /// A rectangular region.
-#[derive(Clone, Copy, Debug, Serialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 pub struct Rect {
     /// Rect position.
     pub position: dpi::Position,
@@ -65,7 +65,7 @@ impl Default for Rect {
 }
 
 /// A rectangular region in physical pixels.
-#[derive(Clone, Copy, Debug, Serialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserializ)]
 pub struct PhysicalRect<P: dpi::Pixel, S: dpi::Pixel> {
     /// Rect position.
     pub position: dpi::PhysicalPosition<P>,
@@ -83,7 +83,7 @@ impl<P: dpi::Pixel, S: dpi::Pixel> Default for PhysicalRect<P, S> {
 }
 
 /// A rectangular region in logical pixels.
-#[derive(Clone, Copy, Debug, Serialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserializ)]
 pub struct LogicalRect<P: dpi::Pixel, S: dpi::Pixel> {
     /// Rect position.
     pub position: dpi::LogicalPosition<P>,
