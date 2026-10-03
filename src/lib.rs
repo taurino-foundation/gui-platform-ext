@@ -50,7 +50,7 @@ pub fn arc_mut<T>(t: T) -> ArcMut<T> {
 pub fn apply_shadow_correction(
     decorations: bool,
     window_size: &mut PhysicalSize<u32>, // oder was auch immer der Typ ist
-) -> Result<u32> {
+) -> anyhow::Result<u32> {
     #[allow(unused_mut)]
     let mut shadow_width = 0;
 
